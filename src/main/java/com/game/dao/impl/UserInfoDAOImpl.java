@@ -1,4 +1,4 @@
-package com.game.dao;
+package com.game.dao.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,13 +9,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.game.common.DBCon;
+import com.game.dao.UserInfoDAO;
 
 public class UserInfoDAOImpl implements UserInfoDAO {
 
 	@Override
 	public List<Map<String, String>> selectUserInfoList(Map<String, String> userInfo) {
-		String sql = "SELECT UI_NUM, UI_NAME, UI_ID, UI_PWD, UI_IMG_PATH, UI_DESC, BIRTH, CREDAT, CRETIM, LMODAT, LMOTIM, ACTIVE FROM USER_INFO";
-		List<Map<String, String>> userInfoList = new ArrayList<>();
+		String sql = "SELECT UI_NUM, UI_NAME, UI_ID, UI_PWD, UI_IMG_PATH, UI_DESC, UI_BIRTH, CREDAT, CRETIM, LMODAT, LMOTIM, ACTIVE FROM USER_INFO";
+		List<Map<String, String>> userList = new ArrayList<>();
 		try (Connection con = DBCon.getCon()) {
 			try (PreparedStatement ps = con.prepareStatement(sql)) {
 				try (ResultSet rs = ps.executeQuery()) {
@@ -33,26 +34,27 @@ public class UserInfoDAOImpl implements UserInfoDAO {
 						ui.put("lmodat", rs.getString("LMODAT"));
 						ui.put("lmotim", rs.getString("LMOTIM"));
 						ui.put("active", rs.getString("ACTIVE"));
-						userInfoList.add(ui);
+						userList.add(ui);
 					}
 				}
 			}
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 
-		return userInfoList;
+		return userList;
 	}
 
 	@Override
 	public Map<String, String> selectUserInfo(String uiNum) {
-		String sql = "SELECT UI_NUM, UI_NAME, UI_ID, UI_PWD, UI_IMG_PATH, UI_DESC, UI_BIRTH, CREDAT, CRETIM, LMODAT, LMOTIM FROM USER_INFO WHERE UI_NUM=?";
+		String sql = "SELECT UI_NUM, UI_NAME, UI_ID, UI_PWD, UI_IMG_PATH, UI_DESC, DATE_FORMAT(UI_BIRTH,'%Y-%m-%d') UI_BIRTH, "
+				+ "CREDAT, CRETIM, LMODAT, LMOTIM, ACTIVE " + "FROM USER_INFO WHERE UI_NUM=?";
 
 		try (Connection con = DBCon.getCon()) {
 			try (PreparedStatement ps = con.prepareStatement(sql)) {
 				ps.setString(1, uiNum);
 				try (ResultSet rs = ps.executeQuery()) {
-					if (rs.next()) {
+					while (rs.next()) {
 						Map<String, String> ui = new HashMap<>();
 						ui.put("uiNum", rs.getString("UI_NUM"));
 						ui.put("uiName", rs.getString("UI_NAME"));
@@ -72,7 +74,7 @@ public class UserInfoDAOImpl implements UserInfoDAO {
 				}
 			}
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 
 		return null;
@@ -126,17 +128,75 @@ public class UserInfoDAOImpl implements UserInfoDAO {
 	}
 
 	@Override
-	public int deleteUserInfo(Map<String, String> userInfo) {
+	public int deleteUserInfo(String uiNum) {
 		String sql = "DELETE FROM USER_INFO WHERE UI_NUM=?";
 		try (Connection con = DBCon.getCon()) {
 			try (PreparedStatement ps = con.prepareStatement(sql)) {
-				ps.setString(1, userInfo.get("uiNum"));
+				ps.setString(1, uiNum);
 				return ps.executeUpdate();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return 0;
+	}
+
+	public static void main(String[] args) {
+		UserInfoDAO uiDAO = new UserInfoDAOImpl();
+		Map<String, String> map = new HashMap<>();
+		map.put("uiName", "test");
+		map.put("uiId", "test");
+		map.put("uiPwd", "test");
+		map.put("uiDesc", "test");
+		map.put("uiBirth", "20100510");
+		List<Map<String, String>> userInfoList = uiDAO.selectUserInfoList(null);
+		for (Map<String, String> userInfo : userInfoList) {
+			System.out.println(userInfo);
+		}
+		Map<String, String> userInfo = uiDAO.selectUserInfo("1");
+		System.out.println(userInfo);
+		userInfo.put("uiName", "updateTest");
+		int result = uiDAO.updateUserInfo(userInfo);
+		System.out.println(result);
+		userInfo = uiDAO.selectUserInfo("1");
+		System.out.println(userInfo);
+		result = uiDAO.deleteUserInfo("1");
+		System.out.println(result);
+	}
+
+	@Override
+	public Map<String, String> selectUserInfoById(String uiId) {
+		String sql = "SELECT UI_NUM, UI_NAME, UI_ID, UI_PWD, UI_IMG_PATH, UI_DESC, DATE_FORMAT(UI_BIRTH,'%Y-%m-%d') UI_BIRTH, "
+				+ "CREDAT, CRETIM, LMODAT, LMOTIM, ACTIVE " + "FROM USER_INFO WHERE UI_ID=?";
+
+		try (Connection con = DBCon.getCon()) {
+			try (PreparedStatement ps = con.prepareStatement(sql)) {
+				ps.setString(1, uiId);
+				try (ResultSet rs = ps.executeQuery()) {
+					while (rs.next()) {
+						Map<String, String> ui = new HashMap<>();
+						ui.put("uiNum", rs.getString("UI_NUM"));
+						ui.put("uiName", rs.getString("UI_NAME"));
+						ui.put("uiId", rs.getString("UI_ID"));
+						ui.put("uiPwd", rs.getString("UI_PWD"));
+						ui.put("uiImgPath", rs.getString("UI_IMG_PATH"));
+						ui.put("uiDesc", rs.getString("UI_DESC"));
+						ui.put("uiBirth", rs.getString("UI_BIRTH"));
+						ui.put("credat", rs.getString("CREDAT"));
+						ui.put("cretim", rs.getString("CRETIM"));
+						ui.put("lmodat", rs.getString("LMODAT"));
+						ui.put("lmotim", rs.getString("LMOTIM"));
+						ui.put("active", rs.getString("ACTIVE"));
+						return ui;
+
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 }
