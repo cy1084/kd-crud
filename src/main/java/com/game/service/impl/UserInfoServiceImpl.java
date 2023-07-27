@@ -43,18 +43,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 	}
 
 	@Override
-	public boolean login(Map<String, String> userInfo, HttpSession session) {
-		String uiId=userInfo.get("uiId");
-		Map<String,String> tmp=uiDAO.selectUserInfoById(uiId); //디비 조회
-		
-		if(tmp != null) {	//있는 아이디로 조회
-			String uiPwd=tmp.get("uiPwd"); //디비에 저장된 비밀번호를 뽑아와 비교
-			if(uiPwd.equals(userInfo.get("uiPwd"))){//사용자가 입력한 비밀번호와 디비에 있는 비밀번호가 같으면 로그인 성공!
-				session.setAttribute("user",tmp);
-				return true;
-			}
-		}
-		return false;
-	}
+	public Map<String, String> login(String uiId) {
+		return uiDAO.selectUserInfoById(uiId);
 
+	}
 }

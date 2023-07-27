@@ -28,8 +28,8 @@ public class UserInfoServlet extends HttpServlet {
 		if ("list".equals(cmd)) {
 			List<Map<String, String>> userInfoList = uiService.selectUserInfoList(null);
 			request.setAttribute("userInfoList", userInfoList);
-			// userInfoList는 30라인에서 죽는데, jsp를 forward 하기 위해선 34라인까지는 살아 있어야 함 -> 그래서
-			// request에 저장
+			// userInfoList는 30라인에서 죽는데, jsp를 forward 하기 위해선 34라인까지는 살아 있어야 함 
+			// -> 그래서 request에 저장
 			// path+="/user-info/list";
 		} else if ("view".equals(cmd)) {
 			String uiNum = request.getParameter("uiNum");
@@ -41,6 +41,14 @@ public class UserInfoServlet extends HttpServlet {
 			String uiNum = request.getParameter("uiNum");
 			Map<String, String> userInfo = uiService.selectUserInfo(uiNum);
 			request.setAttribute("userInfo", userInfo);
+		}else if("logout".equals(cmd)) {
+			HttpSession session=request.getSession();
+			session.invalidate();
+			request.setAttribute("msg", "로그아웃 되었습니다.");
+			request.setAttribute("url","/user-info/login");
+			CommonView.forwardMessage(request, response); //포워딩 후 밑에서 포워딩을 또 하면 안되므로 return을 해서 
+														  //한번 포워딩 한 후 두번째 포워딩은 막아버림
+			return;
 		}
 
 		// path +=".jsp";
@@ -59,7 +67,9 @@ public class UserInfoServlet extends HttpServlet {
 		userInfo.put("uiName", request.getParameter("uiName"));
 		userInfo.put("uiPwd", request.getParameter("uiPwd"));
 		userInfo.put("uiDesc", request.getParameter("uiDesc"));
-		userInfo.put("uiBirth", request.getParameter("uiBirth").replace("-", ""));
+		if(request.getParameter("uiBirth")!=null) {
+			userInfo.put("uiBirth", request.getParameter("uiBirth").replace("-", ""));
+		}
 
 		if ("insert".equals(cmd)) {
 			int result = uiService.insertUserInfo(userInfo);
@@ -92,10 +102,19 @@ public class UserInfoServlet extends HttpServlet {
 			request.setAttribute("msg", "아이디나 비밀번호를 확인하세요.");
 			request.setAttribute("url", "/userInfo/login");
 			HttpSession session = request.getSession();
-			boolean login = uiService.login(userInfo, session);
-			if(login) {
-				request.setAttribute("msg", "로그인을 완료하였습니다.");
-				request.setAttribute("url", "/");
+			String uiId=request.getParameter("uiId");
+			String uiPwd=request.getParameter("uiPwd");
+			Map<String,String> ui=uiService.login(uiId); //uiId를 서비스로 보내어 selectUserInfoById 쿼리 실행
+			if(ui != null) {
+				String dbUiPwd=ui.get("uiPwd");
+				if(uiPwd.equals(dbUiPwd)) {
+					request.setAttribute("msg", "로그인 성공.");
+					request.setAttribute("url", "/");
+					//request는 화면 나오면 유지할 필요 없음
+					
+					session.setAttribute("user", ui); //user라는 키 값으로 ui 맵을 넣음
+					//로그인 후엔 화면을 전환해도 계속 로그인 상태를 유지해야 하기 때문에 session으로!!
+				}
 			}
 
 		}

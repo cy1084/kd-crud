@@ -140,30 +140,7 @@ public class UserInfoDAOImpl implements UserInfoDAO {
 		}
 		return 0;
 	}
-
-	public static void main(String[] args) {
-		UserInfoDAO uiDAO = new UserInfoDAOImpl();
-		Map<String, String> map = new HashMap<>();
-		map.put("uiName", "test");
-		map.put("uiId", "test");
-		map.put("uiPwd", "test");
-		map.put("uiDesc", "test");
-		map.put("uiBirth", "20100510");
-		List<Map<String, String>> userInfoList = uiDAO.selectUserInfoList(null);
-		for (Map<String, String> userInfo : userInfoList) {
-			System.out.println(userInfo);
-		}
-		Map<String, String> userInfo = uiDAO.selectUserInfo("1");
-		System.out.println(userInfo);
-		userInfo.put("uiName", "updateTest");
-		int result = uiDAO.updateUserInfo(userInfo);
-		System.out.println(result);
-		userInfo = uiDAO.selectUserInfo("1");
-		System.out.println(userInfo);
-		result = uiDAO.deleteUserInfo("1");
-		System.out.println(result);
-	}
-
+	
 	@Override
 	public Map<String, String> selectUserInfoById(String uiId) {
 		String sql = "SELECT UI_NUM, UI_NAME, UI_ID, UI_PWD, UI_IMG_PATH, UI_DESC, DATE_FORMAT(UI_BIRTH,'%Y-%m-%d') UI_BIRTH, "
@@ -198,5 +175,29 @@ public class UserInfoDAOImpl implements UserInfoDAO {
 
 		return null;
 	}
+
+	public static void main(String[] args) {
+		UserInfoDAO uiDAO = new UserInfoDAOImpl();
+		Map<String, String> map = new HashMap<>();
+		map.put("uiName", "test");
+		map.put("uiId", "test");
+		map.put("uiPwd", "test");
+		map.put("uiDesc", "test");
+		map.put("uiBirth", "20100510");
+		List<Map<String, String>> userInfoList = uiDAO.selectUserInfoList(null);
+		for (Map<String, String> userInfo : userInfoList) {
+			System.out.println(userInfo);
+		}
+		Map<String, String> userInfo = uiDAO.selectUserInfo("1");
+		System.out.println(userInfo);
+		userInfo.put("uiName", "updateTest");
+		int result = uiDAO.updateUserInfo(userInfo);
+		System.out.println(result);
+		userInfo = uiDAO.selectUserInfo("1");
+		System.out.println(userInfo);
+		result = uiDAO.deleteUserInfo("1");
+		System.out.println(result);
+	}
+
 
 }
